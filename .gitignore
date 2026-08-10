@@ -20,3 +20,4 @@ media/
 
 # Variables para pegar en Railway (contienen secretos)
 railway-variables.json
+railway-variables.env

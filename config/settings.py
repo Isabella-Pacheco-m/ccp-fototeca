@@ -59,6 +59,25 @@ _railway_host = env("RAILWAY_PUBLIC_DOMAIN")
 if _railway_host and _railway_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(_railway_host)
 
+EN_RAILWAY = any(
+    env(clave)
+    for clave in (
+        "RAILWAY_PUBLIC_DOMAIN",
+        "RAILWAY_PRIVATE_DOMAIN",
+        "RAILWAY_ENVIRONMENT",
+        "RAILWAY_ENVIRONMENT_NAME",
+        "RAILWAY_SERVICE_NAME",
+        "RAILWAY_PROJECT_ID",
+    )
+)
+
+# El health-check de Railway llega desde su red interna con la cabecera
+# Host: healthcheck.railway.app. Sin este permiso Django responde 400 y el
+# despliegue se marca como fallido aunque la aplicación esté sana.
+HOST_HEALTHCHECK_RAILWAY = "healthcheck.railway.app"
+if EN_RAILWAY and HOST_HEALTHCHECK_RAILWAY not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(HOST_HEALTHCHECK_RAILWAY)
+
 # URL base pública del sitio (se usa para armar los enlaces mágicos).
 SITE_URL = (env("SITE_URL") or (f"https://{_railway_host}" if _railway_host else "http://127.0.0.1:8000")).rstrip("/")
 
@@ -309,6 +328,9 @@ SECURE_REFERRER_POLICY = "same-origin"
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
+    # El health-check entra por HTTP desde la red interna: si se le redirige a
+    # HTTPS responde 301 y Railway lo cuenta como caído.
+    SECURE_REDIRECT_EXEMPT = [r"^salud/$"]
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = int(env("SECURE_HSTS_SECONDS", "31536000"))

@@ -120,6 +120,12 @@ siempre el mismo mensaje exista o no la cuenta, para no revelar el padrón.
    ```
 
 5. `healthcheckPath` apunta a `/salud/`, que verifica la conexión a la base.
+   Railway consulta esa ruta desde su red interna con la cabecera
+   `Host: healthcheck.railway.app` y por HTTP plano, así que el proyecto añade
+   ese host a `ALLOWED_HOSTS` **solo cuando detecta que corre en Railway** y
+   exime `/salud/` de la redirección a HTTPS. Sin ambas cosas el despliegue se
+   marca como fallido (`DisallowedHost` o un 301) aunque la aplicación esté
+   perfectamente sana.
 
 ---
 
