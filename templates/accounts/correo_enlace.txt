@@ -1,0 +1,17 @@
+FOTOTECA · CÁMARA DE COMERCIO DE PALMIRA
+
+Hola{% if usuario.nombre %} {{ usuario.nombre }}{% endif %}:
+
+Recibimos una solicitud de acceso a la Fototeca institucional con este correo.
+Ingresa desde el siguiente enlace:
+
+{{ url }}
+
+El enlace es de un solo uso y vence en {{ minutos }} minutos.
+
+Si no solicitaste este acceso, ignora este mensaje: nadie podrá entrar con tu
+correo sin abrir el enlace.
+
+--
+Cámara de Comercio de Palmira
+Este es un mensaje automático, por favor no respondas.

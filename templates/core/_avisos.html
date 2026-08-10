@@ -1,0 +1,6 @@
+{% for mensaje in messages %}
+  <div class="aviso aviso--{{ mensaje.tags|default:'info' }}" role="status">
+    <span>{{ mensaje }}</span>
+    <button type="button" class="aviso__cerrar" aria-label="Cerrar aviso">&times;</button>
+  </div>
+{% endfor %}

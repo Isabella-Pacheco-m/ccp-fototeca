@@ -1,0 +1,72 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block cabecera %}{% endblock %}
+{% block pie %}{% endblock %}
+{% block avisos %}{% endblock %}
+
+{% block contenido %}
+{% with url_actual=request.resolver_match.url_name %}
+<div class="panel">
+  <aside class="panel__lateral">
+    <a class="panel__marca" href="{% url 'dashboard:inicio' %}">
+      <img src="{% static 'img/logo-ccp.png' %}" alt="Cámara de Comercio de Palmira">
+      <span>Fototeca<small>Panel de gestión</small></span>
+    </a>
+
+    <nav class="menu" aria-label="Menú del panel">
+      <span class="menu__seccion">General</span>
+      <a class="menu__enlace {% if url_actual == 'inicio' %}menu__enlace--activo{% endif %}" href="{% url 'dashboard:inicio' %}">
+        <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="8" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/>
+          <rect x="14" y="11" width="7" height="10" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+        Resumen
+      </a>
+
+      <span class="menu__seccion">Archivo</span>
+      <a class="menu__enlace {% if url_actual == 'fotografias' or url_actual == 'fotografia_editar' or url_actual == 'fotografia_eliminar' %}menu__enlace--activo{% endif %}" href="{% url 'dashboard:fotografias' %}">
+        <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="m4 17 5-5 3.5 3.5L16 12l4 4"/>
+        </svg>
+        Fotografías
+      </a>
+      <a class="menu__enlace {% if url_actual == 'fotografia_nueva' %}menu__enlace--activo{% endif %}" href="{% url 'dashboard:fotografia_nueva' %}">
+        <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Subir fotografía
+      </a>
+      <a class="menu__enlace {% if url_actual == 'categorias' or url_actual == 'categoria_editar' %}menu__enlace--activo{% endif %}" href="{% url 'dashboard:categorias' %}">
+        <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 7h16M4 12h10M4 17h7"/>
+        </svg>
+        Categorías
+      </a>
+
+      <span class="menu__seccion">Accesos</span>
+      <a class="menu__enlace {% if url_actual == 'usuarios' or url_actual == 'usuario_nuevo' or url_actual == 'usuario_editar' %}menu__enlace--activo{% endif %}" href="{% url 'dashboard:usuarios' %}">
+        <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 8.5a3 3 0 0 1 0 5"/><path d="M17.5 19a5 5 0 0 0-2-4"/>
+        </svg>
+        Usuarios
+      </a>
+    </nav>
+
+    <div class="panel__pie">
+      <p style="margin:0 0 0.6rem"><a href="{% url 'gallery:galeria' %}">← Ver la galería pública</a></p>
+      <p style="margin:0 0 0.6rem;opacity:0.7">{{ user.nombre|default:user.correo }}</p>
+      <form method="post" action="{% url 'accounts:salir' %}">
+        {% csrf_token %}
+        <button type="submit" class="boton boton--sm" style="--fondo: rgba(250,246,228,0.14); --color: var(--crema);">Cerrar sesión</button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="panel__contenido">
+    {% if messages %}<div class="avisos" style="margin:0 0 1.5rem">{% include "core/_avisos.html" %}</div>{% endif %}
+    {% block panel %}{% endblock %}
+  </div>
+</div>
+{% endwith %}
+{% endblock %}

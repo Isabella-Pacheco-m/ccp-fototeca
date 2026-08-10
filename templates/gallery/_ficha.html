@@ -1,0 +1,19 @@
+{% comment %}Tarjeta de una fotografía dentro de la rejilla.{% endcomment %}
+<a class="ficha" href="{% url 'gallery:detalle' foto.pk %}">
+  <div class="ficha__imagen">
+    <img src="{{ foto.url_miniatura }}" alt="{{ foto.titulo }}" loading="lazy" decoding="async"
+         width="{{ foto.ancho }}" height="{{ foto.alto }}">
+    <span class="ficha__anio">{{ foto.anio }}</span>
+    {% if not foto.publicada %}<span class="ficha__borrador">Borrador</span>{% endif %}
+  </div>
+  <div class="ficha__cuerpo">
+    <h3 class="ficha__titulo">{{ foto.titulo }}</h3>
+    {% if foto.descripcion %}<p class="ficha__descripcion">{{ foto.descripcion }}</p>{% endif %}
+    <div class="ficha__pie">
+      <span class="etiqueta-categoria">
+        <span class="etiqueta-categoria__punto" style="background: {{ foto.categoria.color }};"></span>
+        {{ foto.categoria.nombre }}
+      </span>
+    </div>
+  </div>
+</a>

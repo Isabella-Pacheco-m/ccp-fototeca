@@ -1,0 +1,78 @@
+{% extends "dashboard/base_panel.html" %}
+
+{% block titulo %}Panel · Categorías{% endblock %}
+
+{% block panel %}
+<div class="panel-cabecera">
+  <div>
+    <h1>Categorías</h1>
+    <p>Clasificación con la que se organiza y filtra el archivo.</p>
+  </div>
+</div>
+
+<div class="form-panel">
+  <section class="tarjeta">
+    <div class="tarjeta__cabecera"><h2>Categorías existentes</h2></div>
+    <div class="tabla-envoltura">
+      <table class="tabla">
+        <thead>
+          <tr><th>Nombre</th><th>Fotografías</th><th>Orden</th><th>Estado</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for categoria in categorias %}
+            <tr>
+              <td>
+                <div class="tabla__principal" style="display:flex;align-items:center;gap:0.55rem">
+                  <span class="etiqueta-categoria__punto" style="background: {{ categoria.color }};"></span>
+                  {{ categoria.nombre }}
+                </div>
+                {% if categoria.descripcion %}<div class="tabla__secundario">{{ categoria.descripcion }}</div>{% endif %}
+              </td>
+              <td style="font-variant-numeric:tabular-nums">{{ categoria.total }}</td>
+              <td style="font-variant-numeric:tabular-nums">{{ categoria.orden }}</td>
+              <td>
+                {% if categoria.activa %}
+                  <span class="insignia insignia--publicada">Activa</span>
+                {% else %}
+                  <span class="insignia insignia--inactiva">Inactiva</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="tabla__acciones">
+                  <a class="boton boton--fantasma boton--sm" href="{% url 'dashboard:categoria_editar' categoria.pk %}">Editar</a>
+                  <form method="post" action="{% url 'dashboard:categoria_eliminar' categoria.pk %}" class="en-linea"
+                        data-confirmar="¿Eliminar la categoría «{{ categoria.nombre }}»?">
+                    {% csrf_token %}
+                    <button type="submit" class="boton boton--peligro-contorno boton--sm">Eliminar</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" style="text-align:center;padding:2.5rem;color:var(--tinta-tenue)">
+              Aún no hay categorías. Crea la primera con el formulario de al lado.
+            </td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="tarjeta">
+    <div class="tarjeta__cabecera"><h2>Nueva categoría</h2></div>
+    <div class="tarjeta__cuerpo">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "core/_campo.html" with campo=formulario.nombre %}
+        {% include "core/_campo.html" with campo=formulario.descripcion %}
+        <div class="rejilla-form rejilla-form--2">
+          {% include "core/_campo.html" with campo=formulario.color %}
+          {% include "core/_campo.html" with campo=formulario.orden %}
+        </div>
+        {% include "core/_casilla.html" with campo=formulario.activa %}
+        <button type="submit" class="boton boton--bloque">Crear categoría</button>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}

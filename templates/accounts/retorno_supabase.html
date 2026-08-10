@@ -1,0 +1,77 @@
+{% extends "accounts/_base_acceso.html" %}
+
+{% block titulo %}Validando tu acceso{% endblock %}
+
+{% block acceso %}
+<div class="tarjeta-confirmacion" id="estado">
+  <div class="cargando" id="girador" aria-hidden="true"></div>
+  <h1 style="font-size:1.6rem" id="estado-titulo">Validando tu acceso…</h1>
+  <p style="color:var(--tinta-suave)" id="estado-texto">
+    Estamos confirmando tu enlace con Supabase. Esto toma solo un momento.
+  </p>
+  <p id="estado-acciones" hidden>
+    <a class="boton boton--contorno" href="{% url 'accounts:ingresar' %}">Solicitar un enlace nuevo</a>
+  </p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  "use strict";
+
+  var URL_SESION = "{% url 'accounts:sesion_supabase' %}";
+  var TOKEN_CSRF = "{{ csrf_token }}";
+  var SIGUIENTE = "{{ next|escapejs }}";
+
+  function fallar(titulo, texto) {
+    document.getElementById("girador").hidden = true;
+    document.getElementById("girador").style.display = "none";
+    document.getElementById("estado-titulo").textContent = titulo;
+    document.getElementById("estado-texto").textContent = texto;
+    document.getElementById("estado-acciones").hidden = false;
+  }
+
+  // Supabase devuelve el token en el fragmento (#), que nunca viaja al servidor.
+  var fragmento = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  var error = fragmento.get("error_description") || fragmento.get("error");
+  if (error) {
+    fallar("No pudimos validar el enlace", decodeURIComponent(error.replace(/\+/g, " ")));
+    return;
+  }
+
+  var accessToken = fragmento.get("access_token");
+  if (!accessToken) {
+    fallar(
+      "Enlace incompleto",
+      "Este enlace no trae la información de acceso. Puede que ya se haya usado o que haya vencido."
+    );
+    return;
+  }
+
+  fetch(URL_SESION, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-CSRFToken": TOKEN_CSRF },
+    credentials: "same-origin",
+    body: JSON.stringify({ access_token: accessToken, next: SIGUIENTE })
+  })
+    .then(function (respuesta) {
+      return respuesta.json().then(function (datos) {
+        return { ok: respuesta.ok, datos: datos };
+      });
+    })
+    .then(function (resultado) {
+      if (resultado.ok && resultado.datos.ok) {
+        // Limpia el token del historial antes de continuar.
+        history.replaceState(null, "", window.location.pathname);
+        window.location.replace(resultado.datos.destino);
+      } else {
+        fallar("Acceso no autorizado", resultado.datos.error || "No fue posible iniciar la sesión.");
+      }
+    })
+    .catch(function () {
+      fallar("Sin conexión", "No pudimos comunicarnos con el servidor. Intenta de nuevo.");
+    });
+})();
+</script>
+{% endblock %}

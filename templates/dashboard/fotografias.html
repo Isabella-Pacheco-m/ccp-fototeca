@@ -1,0 +1,123 @@
+{% extends "dashboard/base_panel.html" %}
+
+{% block titulo %}Panel · Fotografías{% endblock %}
+
+{% block panel %}
+<div class="panel-cabecera">
+  <div>
+    <h1>Fotografías</h1>
+    <p>{{ total }} {{ total|pluralize:"registro,registros" }} en el archivo.</p>
+  </div>
+  <div class="panel-cabecera__acciones">
+    <a class="boton" href="{% url 'dashboard:fotografia_nueva' %}">
+      <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Subir fotografía
+    </a>
+  </div>
+</div>
+
+<form class="barra-filtros" method="get">
+  <div class="barra-filtros__busqueda">
+    <label class="solo-lectores" for="q">Buscar</label>
+    <input class="campo" type="search" id="q" name="q" value="{{ filtros.q }}" placeholder="Buscar por título o descripción…">
+  </div>
+
+  <label class="solo-lectores" for="estado">Estado</label>
+  <select class="campo" id="estado" name="estado" data-auto-enviar>
+    <option value="">Todos los estados</option>
+    <option value="publicadas" {% if filtros.estado == 'publicadas' %}selected{% endif %}>Publicadas</option>
+    <option value="borradores" {% if filtros.estado == 'borradores' %}selected{% endif %}>Borradores</option>
+  </select>
+
+  <label class="solo-lectores" for="categoria">Categoría</label>
+  <select class="campo" id="categoria" name="categoria" data-auto-enviar>
+    <option value="">Todas las categorías</option>
+    {% for categoria in categorias %}
+      <option value="{{ categoria.slug }}" {% if filtros.categoria == categoria.slug %}selected{% endif %}>{{ categoria.nombre }}</option>
+    {% endfor %}
+  </select>
+
+  <label class="solo-lectores" for="anio">Año</label>
+  <select class="campo" id="anio" name="anio" data-auto-enviar>
+    <option value="">Todos los años</option>
+    {% for anio in anios %}
+      <option value="{{ anio }}" {% if filtros.anio == anio|stringformat:'s' %}selected{% endif %}>{{ anio }}</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit" class="boton boton--contorno boton--sm">Filtrar</button>
+  <a class="boton boton--fantasma boton--sm" href="{% url 'dashboard:fotografias' %}">Limpiar</a>
+</form>
+
+<section class="tarjeta">
+  <div class="tabla-envoltura">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th></th><th>Título</th><th>Año</th><th>Categoría</th><th>Estado</th><th>Cargada</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for foto in pagina %}
+          <tr>
+            <td>
+              <a href="{% url 'gallery:detalle' foto.pk %}">
+                <img class="tabla__miniatura" src="{{ foto.url_miniatura }}" alt="{{ foto.titulo }}" loading="lazy">
+              </a>
+            </td>
+            <td>
+              <div class="tabla__principal">{{ foto.titulo }}</div>
+              {% if foto.descripcion %}
+                <div class="tabla__secundario">{{ foto.descripcion|truncatechars:70 }}</div>
+              {% endif %}
+            </td>
+            <td style="font-variant-numeric:tabular-nums">{{ foto.anio }}</td>
+            <td>
+              <span class="etiqueta-categoria">
+                <span class="etiqueta-categoria__punto" style="background: {{ foto.categoria.color }};"></span>
+                {{ foto.categoria.nombre }}
+              </span>
+            </td>
+            <td>
+              <form method="post" action="{% url 'dashboard:fotografia_publicacion' foto.pk %}" class="en-linea">
+                {% csrf_token %}
+                <input type="hidden" name="volver" value="{{ request.get_full_path }}">
+                <button type="submit" class="insignia {% if foto.publicada %}insignia--publicada{% else %}insignia--borrador{% endif %}"
+                        style="cursor:pointer" title="Cambiar estado de publicación">
+                  {% if foto.publicada %}Publicada{% else %}Borrador{% endif %}
+                </button>
+              </form>
+            </td>
+            <td class="tabla__secundario">
+              {{ foto.creado_en|date:"d/m/Y" }}
+              {% if foto.subida_por %}<br>{{ foto.subida_por.nombre|default:foto.subida_por.correo }}{% endif %}
+            </td>
+            <td>
+              <div class="tabla__acciones">
+                <a class="boton boton--fantasma boton--sm" href="{% url 'dashboard:fotografia_editar' foto.pk %}">Editar</a>
+                <a class="boton boton--peligro-contorno boton--sm" href="{% url 'dashboard:fotografia_eliminar' foto.pk %}">Eliminar</a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" style="text-align:center;padding:3rem;color:var(--tinta-tenue)">
+            No hay fotografías que coincidan con los filtros aplicados.
+          </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if pagina.paginator.num_pages > 1 %}
+  <nav class="paginacion" aria-label="Paginación">
+    {% if pagina.has_previous %}
+      <a class="paginacion__enlace" href="{% querystring pagina=pagina.previous_page_number %}">← Anterior</a>
+    {% endif %}
+    <span class="paginacion__enlace paginacion__enlace--activo">{{ pagina.number }} / {{ pagina.paginator.num_pages }}</span>
+    {% if pagina.has_next %}
+      <a class="paginacion__enlace" href="{% querystring pagina=pagina.next_page_number %}">Siguiente →</a>
+    {% endif %}
+  </nav>
+{% endif %}
+{% endblock %}

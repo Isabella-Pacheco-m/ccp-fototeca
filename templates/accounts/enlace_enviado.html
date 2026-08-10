@@ -1,0 +1,25 @@
+{% extends "accounts/_base_acceso.html" %}
+
+{% block titulo %}Revisa tu correo{% endblock %}
+
+{% block acceso %}
+<div class="tarjeta-confirmacion">
+  <div class="tarjeta-confirmacion__icono">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/>
+    </svg>
+  </div>
+  <h1 style="font-size:1.7rem">Revisa tu correo</h1>
+  <p style="color:var(--tinta-suave)">
+    Si {% if correo %}<span class="correo-destacado">{{ correo }}</span>{% else %}ese correo{% endif %}
+    está autorizado en la Fototeca, allí encontrarás el enlace de acceso.
+  </p>
+  <p style="font-size:0.88rem;color:var(--tinta-tenue)">
+    El enlace es de un solo uso y vence en {{ minutos }} minutos.
+    Si no lo ves, revisa la carpeta de correo no deseado.
+  </p>
+  <div style="display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;margin-top:1.4rem">
+    <a class="boton boton--contorno" href="{% url 'accounts:ingresar' %}">Solicitar otro enlace</a>
+  </div>
+</div>
+{% endblock %}

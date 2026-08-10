@@ -1,0 +1,127 @@
+{% extends "dashboard/base_panel.html" %}
+
+{% block titulo %}Panel · Usuarios{% endblock %}
+
+{% block panel %}
+<div class="panel-cabecera">
+  <div>
+    <h1>Usuarios autorizados</h1>
+    <p>{{ total }} {{ total|pluralize:"cuenta,cuentas" }}. Solo estos correos pueden recibir un enlace mágico.</p>
+  </div>
+  <div class="panel-cabecera__acciones">
+    <a class="boton" href="{% url 'dashboard:usuario_nuevo' %}">
+      <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Autorizar usuario
+    </a>
+  </div>
+</div>
+
+<form class="barra-filtros" method="get">
+  <div class="barra-filtros__busqueda">
+    <label class="solo-lectores" for="q">Buscar</label>
+    <input class="campo" type="search" id="q" name="q" value="{{ filtros.q }}" placeholder="Buscar por correo, nombre o cargo…">
+  </div>
+  <label class="solo-lectores" for="rol">Rol</label>
+  <select class="campo" id="rol" name="rol" data-auto-enviar>
+    <option value="">Todos los roles</option>
+    {% for valor, etiqueta in roles %}
+      <option value="{{ valor }}" {% if filtros.rol == valor %}selected{% endif %}>{{ etiqueta }}</option>
+    {% endfor %}
+  </select>
+  <label class="solo-lectores" for="estado">Estado</label>
+  <select class="campo" id="estado" name="estado" data-auto-enviar>
+    <option value="">Todos los estados</option>
+    <option value="activos" {% if filtros.estado == 'activos' %}selected{% endif %}>Con acceso</option>
+    <option value="inactivos" {% if filtros.estado == 'inactivos' %}selected{% endif %}>Sin acceso</option>
+  </select>
+  <button type="submit" class="boton boton--contorno boton--sm">Filtrar</button>
+  <a class="boton boton--fantasma boton--sm" href="{% url 'dashboard:usuarios' %}">Limpiar</a>
+</form>
+
+<section class="tarjeta">
+  <div class="tabla-envoltura">
+    <table class="tabla">
+      <thead>
+        <tr><th>Persona</th><th>Rol</th><th>Acceso</th><th>Último ingreso</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for persona in pagina %}
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:0.7rem">
+                <span class="avatar" aria-hidden="true">{{ persona.iniciales }}</span>
+                <div>
+                  <div class="tabla__principal">{{ persona.nombre|default:persona.correo }}</div>
+                  <div class="tabla__secundario">
+                    {{ persona.correo }}{% if persona.cargo %} · {{ persona.cargo }}{% endif %}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>
+              {% if persona.es_superadmin %}
+                <span class="insignia insignia--admin">Superadmin</span>
+              {% else %}
+                <span class="insignia insignia--usuario">Consulta</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if persona.is_active %}
+                <span class="insignia insignia--publicada">Habilitado</span>
+              {% else %}
+                <span class="insignia insignia--inactiva">Deshabilitado</span>
+              {% endif %}
+            </td>
+            <td class="tabla__secundario">
+              {% if persona.ultimo_ingreso %}
+                {{ persona.ultimo_ingreso|date:"d/m/Y H:i" }}<br>{{ persona.total_ingresos }} ingreso{{ persona.total_ingresos|pluralize:"s" }}
+              {% else %}
+                Nunca ha ingresado
+              {% endif %}
+            </td>
+            <td>
+              <div class="tabla__acciones">
+                {% if persona.is_active %}
+                  <form method="post" action="{% url 'dashboard:usuario_enviar_enlace' persona.pk %}" class="en-linea">
+                    {% csrf_token %}
+                    <button type="submit" class="boton boton--contorno boton--sm" title="Enviar enlace de acceso">Enviar enlace</button>
+                  </form>
+                {% endif %}
+                <a class="boton boton--fantasma boton--sm" href="{% url 'dashboard:usuario_editar' persona.pk %}">Editar</a>
+                <form method="post" action="{% url 'dashboard:usuario_acceso' persona.pk %}" class="en-linea"
+                      data-confirmar="{% if persona.is_active %}¿Quitar el acceso a {{ persona.correo }}?{% else %}¿Habilitar el acceso a {{ persona.correo }}?{% endif %}">
+                  {% csrf_token %}
+                  <button type="submit" class="boton boton--fantasma boton--sm">
+                    {% if persona.is_active %}Deshabilitar{% else %}Habilitar{% endif %}
+                  </button>
+                </form>
+                <form method="post" action="{% url 'dashboard:usuario_eliminar' persona.pk %}" class="en-linea"
+                      data-confirmar="Se eliminará la cuenta de {{ persona.correo }}. ¿Continuar?">
+                  {% csrf_token %}
+                  <button type="submit" class="boton boton--peligro-contorno boton--sm">Eliminar</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" style="text-align:center;padding:3rem;color:var(--tinta-tenue)">
+            No hay usuarios que coincidan con los filtros.
+          </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% if pagina.paginator.num_pages > 1 %}
+  <nav class="paginacion" aria-label="Paginación">
+    {% if pagina.has_previous %}
+      <a class="paginacion__enlace" href="{% querystring pagina=pagina.previous_page_number %}">← Anterior</a>
+    {% endif %}
+    <span class="paginacion__enlace paginacion__enlace--activo">{{ pagina.number }} / {{ pagina.paginator.num_pages }}</span>
+    {% if pagina.has_next %}
+      <a class="paginacion__enlace" href="{% querystring pagina=pagina.next_page_number %}">Siguiente →</a>
+    {% endif %}
+  </nav>
+{% endif %}
+{% endblock %}

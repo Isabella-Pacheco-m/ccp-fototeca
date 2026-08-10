@@ -1,0 +1,101 @@
+{% extends "dashboard/base_panel.html" %}
+
+{% block titulo %}Panel · Resumen{% endblock %}
+
+{% block panel %}
+<div class="panel-cabecera">
+  <div>
+    <h1>Resumen del archivo</h1>
+    <p>Estado general de la fototeca institucional.</p>
+  </div>
+  <div class="panel-cabecera__acciones">
+    <a class="boton" href="{% url 'dashboard:fotografia_nueva' %}">
+      <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Subir fotografía
+    </a>
+    <a class="boton boton--contorno" href="{% url 'dashboard:usuario_nuevo' %}">Autorizar usuario</a>
+  </div>
+</div>
+
+<div class="metricas">
+  <div class="metrica">
+    <div class="metrica__valor">{{ total }}</div>
+    <div class="metrica__etiqueta">Fotografías</div>
+    {% if anio_min %}<p class="metrica__nota">Desde {{ anio_min }} hasta {{ anio_max }}</p>{% endif %}
+  </div>
+  <div class="metrica metrica--verde">
+    <div class="metrica__valor">{{ publicadas }}</div>
+    <div class="metrica__etiqueta">Publicadas</div>
+    <p class="metrica__nota">{{ borradores }} en borrador</p>
+  </div>
+  <div class="metrica metrica--hondo">
+    <div class="metrica__valor">{{ total_usuarios }}</div>
+    <div class="metrica__etiqueta">Accesos activos</div>
+    <p class="metrica__nota">{{ total_superadmins }} superadministrador{{ total_superadmins|pluralize:"es" }}</p>
+  </div>
+  <div class="metrica">
+    <div class="metrica__valor">{{ peso_total_mb }}<span style="font-size:1rem"> MB</span></div>
+    <div class="metrica__etiqueta">Almacenado en Postgres</div>
+    <p class="metrica__nota">Imágenes optimizadas al guardar</p>
+  </div>
+</div>
+
+<div class="form-panel">
+  <section class="tarjeta">
+    <div class="tarjeta__cabecera">
+      <h2>Últimas incorporaciones</h2>
+      <a class="boton boton--fantasma boton--sm" href="{% url 'dashboard:fotografias' %}" style="margin-left:auto">Ver todas</a>
+    </div>
+    <div class="tabla-envoltura">
+      <table class="tabla">
+        <thead>
+          <tr><th></th><th>Título</th><th>Año</th><th>Categoría</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+          {% for foto in recientes %}
+            <tr>
+              <td><img class="tabla__miniatura" src="{{ foto.url_miniatura }}" alt="" loading="lazy"></td>
+              <td>
+                <div class="tabla__principal">{{ foto.titulo }}</div>
+                <div class="tabla__secundario">{{ foto.creado_en|date:"d/m/Y H:i" }}</div>
+              </td>
+              <td>{{ foto.anio }}</td>
+              <td>{{ foto.categoria.nombre }}</td>
+              <td>
+                {% if foto.publicada %}
+                  <span class="insignia insignia--publicada">Publicada</span>
+                {% else %}
+                  <span class="insignia insignia--borrador">Borrador</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" style="text-align:center;padding:2.5rem;color:var(--tinta-tenue)">
+              Todavía no hay fotografías cargadas.
+              <a href="{% url 'dashboard:fotografia_nueva' %}">Sube la primera</a>.
+            </td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="tarjeta">
+    <div class="tarjeta__cabecera"><h2>Por categoría</h2></div>
+    <div class="tarjeta__cuerpo">
+      {% for categoria in resumen_categorias %}
+        <div style="display:flex;align-items:center;gap:0.7rem;padding:0.55rem 0;border-bottom:1px solid var(--linea)">
+          <span class="etiqueta-categoria__punto" style="background: {{ categoria.color }};"></span>
+          <span style="font-weight:600">{{ categoria.nombre }}</span>
+          <span style="margin-left:auto;font-variant-numeric:tabular-nums;color:var(--tinta-suave)">{{ categoria.total }}</span>
+        </div>
+      {% empty %}
+        <p style="margin:0;color:var(--tinta-tenue)">Sin fotografías clasificadas todavía.</p>
+      {% endfor %}
+      <p style="margin:1.1rem 0 0">
+        <a class="boton boton--contorno boton--sm boton--bloque" href="{% url 'dashboard:categorias' %}">Gestionar categorías</a>
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

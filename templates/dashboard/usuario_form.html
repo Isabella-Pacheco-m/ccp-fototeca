@@ -1,0 +1,75 @@
+{% extends "dashboard/base_panel.html" %}
+
+{% block titulo %}Panel · {{ titulo_pagina }}{% endblock %}
+
+{% block panel %}
+<div class="panel-cabecera">
+  <div>
+    <h1>{{ titulo_pagina }}</h1>
+    <p>Las personas autorizadas ingresan solo con enlace mágico; no se manejan contraseñas.</p>
+  </div>
+  <div class="panel-cabecera__acciones">
+    <a class="boton boton--fantasma" href="{% url 'dashboard:usuarios' %}">← Volver al listado</a>
+  </div>
+</div>
+
+<div class="form-panel">
+  <section class="tarjeta">
+    <div class="tarjeta__cabecera"><h2>Datos de la persona</h2></div>
+    <div class="tarjeta__cuerpo">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "core/_campo.html" with campo=formulario.correo %}
+        <div class="rejilla-form rejilla-form--2">
+          {% include "core/_campo.html" with campo=formulario.nombre %}
+          {% include "core/_campo.html" with campo=formulario.cargo %}
+        </div>
+        {% include "core/_campo.html" with campo=formulario.rol %}
+        {% include "core/_casilla.html" with campo=formulario.is_active %}
+        {% include "core/_campo.html" with campo=formulario.notas %}
+
+        <div class="acciones-form">
+          <button type="submit" class="boton">{% if usuario_editado %}Guardar cambios{% else %}Autorizar acceso{% endif %}</button>
+          {% if not usuario_editado %}
+            <button type="submit" name="enviar_enlace" value="1" class="boton boton--lima">Autorizar y enviar enlace</button>
+          {% endif %}
+          <a class="boton boton--fantasma" href="{% url 'dashboard:usuarios' %}">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="tarjeta">
+    <div class="tarjeta__cabecera"><h2>Cómo funciona el acceso</h2></div>
+    <div class="tarjeta__cuerpo">
+      <ol class="pasos" style="border-top:0;padding-top:0;margin-top:0">
+        <li><span class="pasos__num">1</span> La persona escribe su correo en la pantalla de ingreso.</li>
+        <li><span class="pasos__num">2</span> Si el correo está en esta lista y habilitado, recibe un enlace de un solo uso.</li>
+        <li><span class="pasos__num">3</span> Al abrirlo entra a la galería. Nadie más puede ver el archivo.</li>
+      </ol>
+
+      {% if usuario_editado %}
+        <hr>
+        <dl class="datos-lista" style="border-top:0;padding-top:0;margin-top:0">
+          <div><dt>Alta</dt><dd>{{ usuario_editado.date_joined|date:"d/m/Y" }}</dd></div>
+          <div><dt>Ingresos</dt><dd>{{ usuario_editado.total_ingresos }}</dd></div>
+          <div>
+            <dt>Último</dt>
+            <dd>{% if usuario_editado.ultimo_ingreso %}{{ usuario_editado.ultimo_ingreso|date:"d/m/Y H:i" }}{% else %}Nunca{% endif %}</dd>
+          </div>
+          {% if usuario_editado.invitado_por %}
+            <div><dt>Invitó</dt><dd>{{ usuario_editado.invitado_por.nombre|default:usuario_editado.invitado_por.correo }}</dd></div>
+          {% endif %}
+        </dl>
+
+        {% if usuario_editado.is_active %}
+          <form method="post" action="{% url 'dashboard:usuario_enviar_enlace' usuario_editado.pk %}" style="margin-top:1.2rem">
+            {% csrf_token %}
+            <button type="submit" class="boton boton--contorno boton--bloque">Enviar enlace de acceso ahora</button>
+          </form>
+        {% endif %}
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}

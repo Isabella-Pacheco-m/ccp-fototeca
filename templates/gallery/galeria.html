@@ -1,0 +1,125 @@
+{% extends "core/base.html" %}
+
+{% block titulo %}Galería{% endblock %}
+{% block descripcion %}Consulta y busca en el archivo fotográfico de la Cámara de Comercio de Palmira: inauguraciones, sedes y eventos.{% endblock %}
+
+{% block contenido %}
+<section class="portada">
+  <div class="contenedor">
+    <p class="portada__etiqueta">Cámara de Comercio de Palmira</p>
+    <h1>Fototeca <em>institucional</em></h1>
+    <p class="portada__entrada">
+      Memoria visual de la entidad: inauguraciones, sedes y eventos.
+      Busca por título, descripción, año o categoría.
+    </p>
+
+    <form class="buscador" method="get" action="{% url 'gallery:galeria' %}" role="search">
+      <div class="buscador__caja">
+        <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+        </svg>
+        <label class="solo-lectores" for="q">Buscar fotografías</label>
+        <input class="buscador__campo" type="search" id="q" name="q" value="{{ filtros.q }}"
+               placeholder="Buscar por título, descripción, categoría o año…" autocomplete="off">
+        {% if filtros.q %}
+          <button type="button" class="buscador__limpiar" data-limpiar="q" data-enviar="1" aria-label="Limpiar búsqueda">&times;</button>
+        {% endif %}
+        <button type="submit" class="boton buscador__enviar">Buscar</button>
+      </div>
+
+      <div class="filtros">
+        <div class="filtros__grupo">
+          <span class="filtros__titulo">Categoría</span>
+          <a class="pastilla {% if not filtros.categoria %}pastilla--activa{% endif %}"
+             href="{% querystring categoria=None pagina=None %}">Todas</a>
+          {% for categoria in categorias %}
+            <a class="pastilla {% if filtros.categoria == categoria.slug %}pastilla--activa{% endif %}"
+               href="{% querystring categoria=categoria.slug pagina=None %}">
+              <span class="pastilla__punto" style="background: {{ categoria.color }};"></span>
+              {{ categoria.nombre }}
+              <span class="pastilla__conteo">{{ categoria.total }}</span>
+            </a>
+          {% endfor %}
+        </div>
+
+        <div class="filtros__derecha">
+          <label class="solo-lectores" for="anio">Año</label>
+          <select class="selector-linea" id="anio" name="anio" data-auto-enviar>
+            <option value="">Todos los años</option>
+            {% for anio in anios %}
+              <option value="{{ anio }}" {% if filtros.anio == anio|stringformat:'s' %}selected{% endif %}>{{ anio }}</option>
+            {% endfor %}
+          </select>
+
+          <label class="solo-lectores" for="orden">Ordenar por</label>
+          <select class="selector-linea" id="orden" name="orden" data-auto-enviar>
+            {% for valor, etiqueta in ordenes %}
+              <option value="{{ valor }}" {% if filtros.orden == valor %}selected{% endif %}>{{ etiqueta }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      {# Conserva la categoría seleccionada al buscar o reordenar. #}
+      <input type="hidden" name="categoria" value="{{ filtros.categoria }}">
+    </form>
+  </div>
+</section>
+
+<div class="contenedor">
+  <div class="resumen-resultados">
+    {% if hay_filtros %}
+      <span><strong>{{ total }}</strong> {{ total|pluralize:"fotografía,fotografías" }} de {{ total_catalogo }} en el archivo</span>
+      <a class="pastilla" href="{% url 'gallery:galeria' %}">Quitar filtros</a>
+    {% else %}
+      <span><strong>{{ total }}</strong> {{ total|pluralize:"fotografía,fotografías" }} en el archivo</span>
+    {% endif %}
+    {% if pagina.paginator.num_pages > 1 %}
+      <span style="margin-left:auto">Página {{ pagina.number }} de {{ pagina.paginator.num_pages }}</span>
+    {% endif %}
+  </div>
+
+  <div class="rejilla">
+    {% for foto in pagina %}
+      {% include "gallery/_ficha.html" with foto=foto %}
+    {% empty %}
+      <div class="vacio">
+        <svg class="vacio__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-5 3.5 3.5L16 12l4 4"/>
+        </svg>
+        {% if hay_filtros %}
+          <h2>Sin coincidencias</h2>
+          <p>No encontramos fotografías con esos criterios. Prueba con otras palabras o quita algún filtro.</p>
+          <p style="margin-top:1.2rem"><a class="boton boton--contorno" href="{% url 'gallery:galeria' %}">Ver todo el archivo</a></p>
+        {% else %}
+          <h2>La fototeca aún está vacía</h2>
+          <p>Cuando el equipo cargue las primeras fotografías, aparecerán aquí.</p>
+          {% if user.is_authenticated and user.es_superadmin %}
+            <p style="margin-top:1.2rem"><a class="boton" href="{% url 'dashboard:fotografia_nueva' %}">Subir la primera fotografía</a></p>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if pagina.paginator.num_pages > 1 %}
+    <nav class="paginacion" aria-label="Paginación de resultados">
+      {% if pagina.has_previous %}
+        <a class="paginacion__enlace" href="{% querystring pagina=pagina.previous_page_number %}" rel="prev">← Anterior</a>
+      {% endif %}
+      {% for numero in pagina.paginator.page_range %}
+        {% if numero == pagina.number %}
+          <span class="paginacion__enlace paginacion__enlace--activo" aria-current="page">{{ numero }}</span>
+        {% elif numero == 1 or numero == pagina.paginator.num_pages or numero > pagina.number|add:-3 and numero < pagina.number|add:3 %}
+          <a class="paginacion__enlace" href="{% querystring pagina=numero %}">{{ numero }}</a>
+        {% elif numero == pagina.number|add:-3 or numero == pagina.number|add:3 %}
+          <span class="paginacion__puntos">…</span>
+        {% endif %}
+      {% endfor %}
+      {% if pagina.has_next %}
+        <a class="paginacion__enlace" href="{% querystring pagina=pagina.next_page_number %}" rel="next">Siguiente →</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+</div>
+{% endblock %}

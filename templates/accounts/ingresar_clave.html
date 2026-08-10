@@ -1,0 +1,23 @@
+{% extends "accounts/_base_acceso.html" %}
+
+{% block titulo %}Ingreso de superadministrador{% endblock %}
+
+{% block acceso %}
+<p class="portada__etiqueta">Acceso administrativo</p>
+<h1 class="acceso__titulo">Ingreso con contraseña</h1>
+<p class="acceso__entrada">
+  Entrada reservada al superadministrador de la Fototeca. Los usuarios de consulta
+  ingresan con enlace mágico.
+</p>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% include "core/_campo.html" with campo=formulario.correo %}
+  {% include "core/_campo.html" with campo=formulario.password %}
+  <button type="submit" class="boton boton--grande boton--bloque">Ingresar al panel</button>
+</form>
+
+<p style="margin-top:1.6rem;font-size:0.88rem">
+  <a href="{% url 'accounts:ingresar' %}">← Volver al ingreso con enlace mágico</a>
+</p>
+{% endblock %}

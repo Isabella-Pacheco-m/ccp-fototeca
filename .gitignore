@@ -1,0 +1,19 @@
+# Entorno
+.venv/
+venv/
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Django
+db.sqlite3
+staticfiles/
+media/
+*.log
+
+# Sistema
+.DS_Store

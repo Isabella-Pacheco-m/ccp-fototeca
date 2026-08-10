@@ -1,0 +1,42 @@
+{% extends "dashboard/base_panel.html" %}
+
+{% block titulo %}Panel · Eliminar fotografía{% endblock %}
+
+{% block panel %}
+<div class="confirmacion">
+  <h1>Eliminar fotografía</h1>
+
+  <div class="confirmacion__aviso">
+    <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" aria-hidden="true" style="width:22px;height:22px;flex:0 0 auto">
+      <path d="M12 8v5"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor"/><circle cx="12" cy="12" r="9"/>
+    </svg>
+    <div>
+      <strong>Esta acción no se puede deshacer.</strong>
+      <p style="margin:0.2rem 0 0;font-size:0.9rem">
+        Se borrarán el registro y el archivo almacenado en la base de datos.
+        Si solo quieres ocultarla de la galería, márcala como borrador.
+      </p>
+    </div>
+  </div>
+
+  <section class="tarjeta">
+    <div class="tarjeta__cuerpo" style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap">
+      <img src="{{ foto.url_miniatura }}" alt="" style="width:150px;border-radius:var(--r2);border:1px solid var(--linea)">
+      <div style="flex:1;min-width:200px">
+        <h2 style="margin-bottom:0.3rem">{{ foto.titulo }}</h2>
+        <p style="color:var(--tinta-suave);font-size:0.9rem;margin-bottom:0.6rem">{{ foto.descripcion|truncatewords:30 }}</p>
+        <p style="margin:0;font-size:0.85rem;color:var(--tinta-tenue)">
+          {{ foto.anio }} · {{ foto.categoria.nombre }} · {{ foto.peso_legible }}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <form method="post" class="acciones-form">
+    {% csrf_token %}
+    <button type="submit" class="boton boton--peligro">Sí, eliminar definitivamente</button>
+    <a class="boton boton--fantasma" href="{% url 'dashboard:fotografias' %}">Cancelar</a>
+    <a class="boton boton--contorno" href="{% url 'dashboard:fotografia_editar' foto.pk %}">Mejor editarla</a>
+  </form>
+</div>
+{% endblock %}

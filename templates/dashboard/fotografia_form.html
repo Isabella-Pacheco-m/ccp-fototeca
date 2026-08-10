@@ -1,0 +1,95 @@
+{% extends "dashboard/base_panel.html" %}
+
+{% block titulo %}Panel · {{ titulo_pagina }}{% endblock %}
+
+{% block panel %}
+<div class="panel-cabecera">
+  <div>
+    <h1>{{ titulo_pagina }}</h1>
+    <p>
+      {% if foto %}
+        Actualiza los datos o reemplaza el archivo de esta fotografía.
+      {% else %}
+        La imagen se optimiza automáticamente y se guarda en la base de datos.
+      {% endif %}
+    </p>
+  </div>
+  <div class="panel-cabecera__acciones">
+    <a class="boton boton--fantasma" href="{% url 'dashboard:fotografias' %}">← Volver al listado</a>
+  </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+
+  {% if formulario.non_field_errors %}
+    <div class="aviso aviso--error" style="margin-bottom:1.2rem">
+      <span>{{ formulario.non_field_errors|join:" " }}</span>
+    </div>
+  {% endif %}
+
+  <div class="form-panel">
+    <section class="tarjeta">
+      <div class="tarjeta__cabecera"><h2>Datos de la fotografía</h2></div>
+      <div class="tarjeta__cuerpo">
+        {% include "core/_campo.html" with campo=formulario.titulo %}
+        {% include "core/_campo.html" with campo=formulario.descripcion %}
+        <div class="rejilla-form rejilla-form--2">
+          {% include "core/_campo.html" with campo=formulario.anio %}
+          {% include "core/_campo.html" with campo=formulario.categoria %}
+        </div>
+
+        <div style="margin-top:0.8rem">
+          {% include "core/_casilla.html" with campo=formulario.publicada %}
+          {% include "core/_casilla.html" with campo=formulario.destacada %}
+        </div>
+
+        <div class="acciones-form">
+          <button type="submit" class="boton">{% if foto %}Guardar cambios{% else %}Agregar a la fototeca{% endif %}</button>
+          {% if not foto %}
+            <button type="submit" name="guardar_y_seguir" value="1" class="boton boton--contorno">Guardar y subir otra</button>
+          {% endif %}
+          <a class="boton boton--fantasma" href="{% url 'dashboard:fotografias' %}">Cancelar</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="tarjeta">
+      <div class="tarjeta__cabecera"><h2>Archivo de imagen</h2></div>
+      <div class="tarjeta__cuerpo">
+        {% if foto %}
+          <div class="previsualizacion" style="margin:0 0 1.1rem">
+            <img src="{{ foto.url_imagen }}" alt="{{ foto.titulo }}">
+            <div class="previsualizacion__pie">
+              Imagen actual · {{ foto.ancho }}×{{ foto.alto }} px · {{ foto.peso_legible }}
+            </div>
+          </div>
+        {% endif %}
+
+        <label class="zona-carga" data-zona-carga>
+          {{ formulario.archivo }}
+          <svg class="zona-carga__icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 16V5m0 0-4 4m4-4 4 4"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/>
+          </svg>
+          <span class="zona-carga__texto">
+            {% if foto %}Reemplazar imagen{% else %}Arrastra la imagen o haz clic aquí{% endif %}
+          </span>
+          <span class="zona-carga__nota" data-nombre-archivo>JPG, PNG o WEBP · hasta 12 MB</span>
+        </label>
+
+        {% for error in formulario.archivo.errors %}<p class="grupo__error">{{ error }}</p>{% endfor %}
+
+        <div class="previsualizacion" id="previsualizacion" hidden style="margin-top:1rem">
+          <img src="" alt="Previsualización">
+          <div class="previsualizacion__pie" data-previa-pie></div>
+        </div>
+
+        <p class="grupo__ayuda" style="margin-top:1rem">
+          Al guardar, la imagen se reorienta según los datos EXIF, se limita a 2400 px de ancho
+          y se genera una miniatura para la galería. El original queda comprimido sin pérdida visible.
+        </p>
+      </div>
+    </section>
+  </div>
+</form>
+{% endblock %}

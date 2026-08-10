@@ -1,0 +1,12 @@
+{% comment %}
+Render de un campo de formulario con etiqueta, ayuda y errores.
+Uso: {% include "core/_campo.html" with campo=formulario.titulo %}
+{% endcomment %}
+<div class="grupo {% if campo.errors %}grupo--error{% endif %}">
+  <label class="grupo__etiqueta" for="{{ campo.id_for_label }}">
+    {{ campo.label }}{% if campo.field.required %} <span aria-hidden="true" style="color:var(--alerta)">*</span>{% endif %}
+  </label>
+  {{ campo }}
+  {% if campo.help_text %}<p class="grupo__ayuda">{{ campo.help_text }}</p>{% endif %}
+  {% for error in campo.errors %}<p class="grupo__error">{{ error }}</p>{% endfor %}
+</div>

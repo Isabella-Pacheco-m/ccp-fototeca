@@ -1,0 +1,85 @@
+{% load static %}<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Fototeca{% endblock %} · Cámara de Comercio de Palmira</title>
+  <meta name="description" content="{% block descripcion %}Archivo fotográfico institucional de la Cámara de Comercio de Palmira.{% endblock %}">
+  <meta name="theme-color" content="#3f6b26">
+  <link rel="icon" href="{% static 'img/logo-ccp.png' %}" type="image/png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/ccp.css' %}">
+  {% block cabeza_extra %}{% endblock %}
+</head>
+<body class="pagina">
+  <a class="saltar" href="#contenido">Ir al contenido principal</a>
+
+  {% block cabecera %}
+  <header class="sitio-cabecera">
+    <div class="contenedor sitio-cabecera__fila">
+      <a class="marca" href="{% url 'gallery:galeria' %}">
+        <img src="{% static 'img/logo-ccp.png' %}" alt="Cámara de Comercio de Palmira">
+        <span class="marca__texto">
+          <span class="marca__titulo">Fototeca</span>
+          <span class="marca__sub">Archivo institucional</span>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="Navegación principal">
+        <a class="nav__enlace {% if request.resolver_match.url_name == 'galeria' %}nav__enlace--activo{% endif %}"
+           href="{% url 'gallery:galeria' %}">Galería</a>
+
+        {% if user.is_authenticated %}
+          {% if user.es_superadmin %}
+            <a class="nav__enlace" href="{% url 'dashboard:inicio' %}">Panel</a>
+          {% endif %}
+          <div class="usuario-ficha">
+            <span class="avatar" aria-hidden="true">{{ user.iniciales }}</span>
+            <span class="usuario-ficha__datos">
+              <span class="usuario-ficha__nombre">{{ user.nombre|default:user.correo }}</span>
+              <span class="usuario-ficha__rol">{{ user.get_rol_display }}</span>
+            </span>
+            <form method="post" action="{% url 'accounts:salir' %}">
+              {% csrf_token %}
+              <button type="submit" class="boton boton--fantasma boton--sm" title="Cerrar sesión">Salir</button>
+            </form>
+          </div>
+        {% else %}
+          <a class="boton boton--contorno boton--sm" href="{% url 'accounts:ingresar' %}">Ingresar</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  {% endblock %}
+
+  <main id="contenido">
+    {% block avisos %}
+      {% if messages %}
+        <div class="contenedor">
+          <div class="avisos">{% include "core/_avisos.html" %}</div>
+        </div>
+      {% endif %}
+    {% endblock %}
+
+    {% block contenido %}{% endblock %}
+  </main>
+
+  {% block pie %}
+  <footer class="sitio-pie">
+    <div class="contenedor sitio-pie__fila">
+      <img src="{% static 'img/logo-ccp.png' %}" alt="">
+      <span>Fototeca institucional · {% now "Y" %} Cámara de Comercio de Palmira</span>
+      <span class="sitio-pie__derecha">
+        <span>Uso interno · material sujeto a derechos de la entidad</span>
+      </span>
+    </div>
+  </footer>
+  {% endblock %}
+
+  <script src="{% static 'js/fototeca.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

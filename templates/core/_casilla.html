@@ -1,0 +1,9 @@
+{% comment %}Casilla de verificación con descripción.{% endcomment %}
+<div class="casilla-fila">
+  {{ campo }}
+  <div>
+    <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+    {% if campo.help_text %}<p>{{ campo.help_text }}</p>{% endif %}
+    {% for error in campo.errors %}<p class="grupo__error">{{ error }}</p>{% endfor %}
+  </div>
+</div>

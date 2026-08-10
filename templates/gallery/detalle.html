@@ -1,0 +1,78 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block titulo %}{{ foto.titulo }}{% endblock %}
+{% block descripcion %}{{ foto.descripcion|truncatewords:30 }}{% endblock %}
+
+{% block contenido %}
+<section class="contenedor detalle">
+  <nav class="migas" aria-label="Ruta de navegación">
+    <a href="{% url 'gallery:galeria' %}">Galería</a>
+    <span aria-hidden="true">/</span>
+    <a href="{% url 'gallery:galeria' %}?categoria={{ foto.categoria.slug }}">{{ foto.categoria.nombre }}</a>
+    <span aria-hidden="true">/</span>
+    <span>{{ foto.anio }}</span>
+  </nav>
+
+  <div class="detalle__rejilla">
+    <figure class="visor" data-visor="{{ foto.url_imagen }}" tabindex="0" role="button"
+            aria-label="Ampliar fotografía" style="margin:0;">
+      <img src="{{ foto.url_imagen }}" alt="{{ foto.titulo }}" width="{{ foto.ancho }}" height="{{ foto.alto }}">
+    </figure>
+
+    <aside class="panel-datos">
+      <span class="etiqueta-categoria">
+        <span class="etiqueta-categoria__punto" style="background: {{ foto.categoria.color }};"></span>
+        {{ foto.categoria.nombre }}
+      </span>
+      <h1>{{ foto.titulo }}</h1>
+      {% if not foto.publicada %}
+        <p><span class="insignia insignia--borrador">Borrador · no visible para los usuarios</span></p>
+      {% endif %}
+      {% if foto.descripcion %}
+        <p class="panel-datos__descripcion">{{ foto.descripcion|linebreaksbr }}</p>
+      {% endif %}
+
+      <dl class="datos-lista">
+        <div><dt>Año</dt><dd>{{ foto.anio }}</dd></div>
+        <div><dt>Categoría</dt><dd>{{ foto.categoria.nombre }}</dd></div>
+        <div><dt>Dimensiones</dt><dd>{{ foto.ancho }} × {{ foto.alto }} px · {{ foto.peso_legible }}</dd></div>
+        <div>
+          <dt>Incorporada</dt>
+          <dd>{{ foto.creado_en|date:"j" }} de {{ foto.creado_en|date:"F"|lower }} de {{ foto.creado_en|date:"Y" }}</dd>
+        </div>
+        {% if user.is_authenticated and user.es_superadmin and foto.subida_por %}
+          <div><dt>Cargada por</dt><dd>{{ foto.subida_por.nombre|default:foto.subida_por.correo }}</dd></div>
+        {% endif %}
+      </dl>
+
+      <div class="acciones-detalle">
+        <a class="boton" href="{% url 'gallery:descargar' foto.pk %}">
+          <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 4v11m0 0 4-4m-4 4-4-4"/><path d="M4 18h16"/>
+          </svg>
+          Descargar
+        </a>
+        {% if user.is_authenticated and user.es_superadmin %}
+          <a class="boton boton--contorno" href="{% url 'dashboard:fotografia_editar' foto.pk %}">Editar</a>
+        {% endif %}
+        <a class="boton boton--fantasma" href="{% url 'gallery:galeria' %}">Volver</a>
+      </div>
+    </aside>
+  </div>
+
+  {% if relacionadas %}
+    <section class="relacionadas">
+      <h2 class="relacionadas__titulo">Más de {{ foto.categoria.nombre }}</h2>
+      <div class="rejilla">
+        {% for foto in relacionadas %}{% include "gallery/_ficha.html" with foto=foto %}{% endfor %}
+      </div>
+    </section>
+  {% endif %}
+</section>
+
+<div class="lightbox" id="lightbox" data-abierto="0" role="dialog" aria-modal="true" aria-label="Fotografía ampliada">
+  <button type="button" class="lightbox__cerrar" aria-label="Cerrar">&times;</button>
+  <img src="" alt="{{ foto.titulo }}">
+</div>
+{% endblock %}

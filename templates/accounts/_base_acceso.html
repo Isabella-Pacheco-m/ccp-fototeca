@@ -1,0 +1,29 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block cabecera %}{% endblock %}
+{% block pie %}{% endblock %}
+{% block avisos %}{% endblock %}
+
+{% block contenido %}
+<div class="acceso">
+  <aside class="acceso__arte">
+    <img class="acceso__logo" src="{% static 'img/logo-ccp.png' %}" alt="Cámara de Comercio de Palmira">
+    <p class="acceso__lema">La memoria visual de la <em>Cámara</em>, en un solo lugar.</p>
+    <p class="acceso__nota">
+      Inauguraciones, sedes y eventos de la Cámara de Comercio de Palmira.
+      Acceso restringido al personal autorizado.
+    </p>
+  </aside>
+
+  <div class="acceso__panel">
+    <a class="marca" href="{% url 'gallery:galeria' %}">
+      <img src="{% static 'img/logo-ccp.png' %}" alt="Cámara de Comercio de Palmira" style="height:40px">
+    </a>
+
+    {% if messages %}<div class="avisos" style="margin-top:0;margin-bottom:1.5rem">{% include "core/_avisos.html" %}</div>{% endif %}
+
+    {% block acceso %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

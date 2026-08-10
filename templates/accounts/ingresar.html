@@ -1,0 +1,42 @@
+{% extends "accounts/_base_acceso.html" %}
+
+{% block titulo %}Ingresar{% endblock %}
+
+{% block acceso %}
+<p class="portada__etiqueta">Acceso con enlace mágico</p>
+<h1 class="acceso__titulo">Ingresa a la Fototeca</h1>
+<p class="acceso__entrada">
+  Escribe tu correo institucional y te enviaremos un enlace de un solo uso.
+  No necesitas recordar ninguna contraseña.
+</p>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+  {% if formulario.non_field_errors %}
+    {% for error in formulario.non_field_errors %}<p class="grupo__error">{{ error }}</p>{% endfor %}
+  {% endif %}
+
+  {% include "core/_campo.html" with campo=formulario.correo %}
+
+  <button type="submit" class="boton boton--grande boton--bloque">
+    <svg class="icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/>
+    </svg>
+    Enviarme el enlace de acceso
+  </button>
+</form>
+
+<ol class="pasos">
+  <li><span class="pasos__num">1</span> Escribe el correo con el que fuiste autorizado por la Cámara.</li>
+  <li><span class="pasos__num">2</span> Abre el correo que llegará en unos segundos.</li>
+  <li><span class="pasos__num">3</span> Haz clic en el enlace y entrarás directamente a la galería.</li>
+</ol>
+
+<p style="margin-top:1.6rem;font-size:0.85rem;color:var(--tinta-tenue)">
+  ¿Aún no tienes acceso? Solicítalo al área de comunicaciones de la Cámara de Comercio de Palmira.
+  <br>
+  <a href="{% url 'accounts:ingresar_clave' %}">Soy superadministrador y quiero entrar con contraseña</a>
+</p>
+{% endblock %}
