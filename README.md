@@ -50,7 +50,9 @@ El `.env` ya trae `SUPABASE_URL`, `SUPABASE_ANON_PUBLIC` y `SUPABASE_SERVICE_ROL
 Falta autorizar la URL de retorno en el panel de Supabase:
 
 1. **Authentication → URL Configuration**
-   - *Site URL*: `https://tu-dominio` (o `http://127.0.0.1:8000` en pruebas).
+   - *Site URL*: `https://tu-dominio` — **con el esquema `https://` incluido**.
+     Si escribes solo `tu-dominio.up.railway.app` el enlace del correo no
+     redirige bien.
    - *Redirect URLs*: añade `https://tu-dominio/cuenta/supabase/retorno/`
      (y `http://127.0.0.1:8000/cuenta/supabase/retorno/` para local).
      **Sin esto Supabase rechaza el enlace.**
@@ -91,16 +93,25 @@ siempre el mismo mensaje exista o no la cuenta, para no revelar el padrón.
    DB_SSL_REQUIRE = True
    SUPABASE_URL / SUPABASE_ANON_PUBLIC / SUPABASE_SERVICE_ROLE
    MAGIC_LINK_BACKEND = supabase
+   ADMIN_CORREO = admin@ccpalmira.org.co
+   ADMIN_CLAVE  = <la contraseña del superadministrador>
    ```
 
-4. El `startCommand` corre `migrate` antes de `gunicorn`. Tras el primer
-   despliegue, crea el superadministrador desde la consola de Railway:
+   > **El `.env` local no viaja a Railway** (está en `.gitignore`, y con razón:
+   > lleva la `service_role` de Supabase). `ADMIN_CORREO` y `ADMIN_CLAVE` hay
+   > que cargarlas a mano en el panel de Railway; si no, no existirá ninguna
+   > cuenta con la que entrar y el ingreso responderá «credenciales
+   > incorrectas».
+
+4. El `startCommand` corre `migrate` y luego
+   `crear_superadmin --solo-si-falta`, que crea la cuenta a partir de esas dos
+   variables en el primer arranque. Es idempotente: si la cuenta ya existe no
+   la toca (no pisa la contraseña), y si no hay `ADMIN_CORREO` simplemente no
+   hace nada. Para cambiar la contraseña más adelante, desde la consola:
 
    ```bash
-   python manage.py crear_superadmin --correo admin@ccpalmira.org.co
+   python manage.py crear_superadmin --correo admin@ccpalmira.org.co --clave "nueva"
    ```
-
-   (Si omites `--clave` se genera una y se imprime una sola vez.)
 
 5. `healthcheckPath` apunta a `/salud/`, que verifica la conexión a la base.
 
@@ -121,6 +132,16 @@ templates/  static/  imagenes-demo/
 Cada módulo es autónomo (modelos, vistas, urls, formularios) y se comunica con
 los demás solo por sus interfaces públicas: `apps.core.imagenes`,
 `apps.core.permisos` y `apps.accounts.servicios`.
+
+### Identidad visual
+
+Paleta tomada del logotipo: lima `#9CB43A`, verde `#6B9A38`, verde profundo
+`#24401A` sobre papel crema `#FCFAF4`. Tipografía **Montserrat** en toda la
+interfaz — la geométrica libre más cercana a Gotham, la tipografía de marca de
+la Cámara. Si la entidad tiene licencia de Gotham, basta con auto-alojar los
+`.woff2` en `static/fonts/`, declarar el `@font-face` y anteponerla en las
+variables `--display` y `--texto` de `static/css/ccp.css`; Montserrat queda
+como respaldo automático.
 
 ### Roles
 

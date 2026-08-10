@@ -22,11 +22,27 @@ class Command(BaseCommand):
         parser.add_argument("--correo", default=os.getenv("ADMIN_CORREO"))
         parser.add_argument("--clave", default=os.getenv("ADMIN_CLAVE"))
         parser.add_argument("--nombre", default=os.getenv("ADMIN_NOMBRE", "Superadministrador"))
+        parser.add_argument(
+            "--solo-si-falta",
+            action="store_true",
+            help=(
+                "No hace nada si la cuenta ya existe ni si falta ADMIN_CORREO. "
+                "Pensado para el arranque automático del despliegue."
+            ),
+        )
 
     def handle(self, *args, **opciones):
+        arranque = opciones["solo_si_falta"]
         correo = (opciones["correo"] or "").strip().lower()
         if not correo:
+            if arranque:
+                self.stdout.write("Sin ADMIN_CORREO: no se crea ningún superadministrador.")
+                return
             self.stderr.write(self.style.ERROR("Indica --correo o la variable ADMIN_CORREO."))
+            return
+
+        if arranque and Usuario.objects.filter(correo=correo).exists():
+            self.stdout.write(f"El superadministrador {correo} ya existe: no se modifica.")
             return
 
         clave = opciones["clave"]
