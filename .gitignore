@@ -17,3 +17,6 @@ media/
 
 # Sistema
 .DS_Store
+
+# Variables para pegar en Railway (contienen secretos)
+railway-variables.json

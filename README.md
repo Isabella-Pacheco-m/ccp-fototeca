@@ -83,6 +83,12 @@ siempre el mismo mensaje exista o no la cuenta, para no revelar el padrón.
 2. Añade el plugin **PostgreSQL** en el mismo proyecto.
 3. Variables del servicio web (`Variables`):
 
+   > Van en el **servicio web**, no en el de Postgres. No copies allí las
+   > variables del servicio Postgres (`PGDATA`, `PGHOST`, `POSTGRES_*`,
+   > `SSL_CERT_DAYS`…): son suyas y `PGHOST=${{RAILWAY_PRIVATE_DOMAIN}}`
+   > resolvería al dominio del **propio servicio web**, no al de la base.
+   > Tampoco escribas `DATABASE_URL` a mano: usa la referencia.
+
    ```
    DATABASE_URL = ${{Postgres.DATABASE_URL}}
    SECRET_KEY   = <cadena larga y aleatoria>

@@ -7,6 +7,7 @@ Todas las opciones sensibles se leen de variables de entorno (archivo .env).
 import os
 import re
 from pathlib import Path
+from urllib.parse import quote_plus
 
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
@@ -118,6 +119,19 @@ TEMPLATES = [
 
 _PLANTILLA_RAILWAY = re.compile(r"\$\{\{.*?\}\}")
 
+# Valores de ejemplo de .env.example: si llegan tal cual, no son configuración
+# real y hay que avisarlo en vez de intentar conectarse a «host:puerto».
+_MARCAS_DE_EJEMPLO = ("usuario:clave@host", "://usuario:clave", "@host:puerto")
+
+
+def _sin_resolver(valor):
+    """¿Quedó una plantilla `${{VAR}}` de Railway sin sustituir?"""
+    return bool(valor) and bool(_PLANTILLA_RAILWAY.search(valor))
+
+
+def _es_de_ejemplo(url):
+    return any(marca in url for marca in _MARCAS_DE_EJEMPLO)
+
 
 def _url_base_datos():
     """
@@ -127,7 +141,14 @@ def _url_base_datos():
       3) SQLite local, para poder levantar el proyecto sin credenciales.
     """
     url = env("DATABASE_URL")
-    if url and not _PLANTILLA_RAILWAY.search(url):
+    if url and not _sin_resolver(url):
+        if _es_de_ejemplo(url):
+            raise ImproperlyConfigured(
+                "DATABASE_URL sigue teniendo el valor de ejemplo de .env.example "
+                "(«postgresql://usuario:clave@host:puerto/base»). En Railway debe "
+                "referenciar el servicio de Postgres: DATABASE_URL=${{ Postgres.DATABASE_URL }} "
+                "(sin espacios), no una URL escrita a mano."
+            )
         return url
 
     host = env("PGHOST")
@@ -135,8 +156,13 @@ def _url_base_datos():
     clave = env("PGPASSWORD") or env("POSTGRES_PASSWORD")
     nombre = env("PGDATABASE") or env("POSTGRES_DB")
     puerto = env("PGPORT", "5432")
-    if host and usuario and clave and nombre and not _PLANTILLA_RAILWAY.search(host):
-        return f"postgresql://{usuario}:{clave}@{host}:{puerto}/{nombre}"
+    if host and usuario and clave and nombre and not _sin_resolver(host):
+        # Las credenciales van escapadas: una contraseña con @, / o : rompería
+        # la URL si se concatenara en crudo.
+        return (
+            f"postgresql://{quote_plus(usuario)}:{quote_plus(clave)}"
+            f"@{host}:{puerto}/{nombre}"
+        )
 
     return None
 
@@ -144,14 +170,28 @@ def _url_base_datos():
 _url_bd = _url_base_datos()
 
 if _url_bd:
-    DATABASES = {
-        "default": dj_database_url.parse(
+    try:
+        _config_bd = dj_database_url.parse(
             _url_bd,
             conn_max_age=int(env("DB_CONN_MAX_AGE", "600")),
             conn_health_checks=True,
             ssl_require=env_bool("DB_SSL_REQUIRE", False),
         )
-    }
+    except Exception as exc:
+        raise ImproperlyConfigured(
+            "No se pudo interpretar DATABASE_URL: "
+            f"{exc}. Debe tener la forma "
+            "postgresql://usuario:contraseña@host:5432/base. En Railway lo "
+            "habitual es dejar que la inyecte el propio servicio con "
+            "DATABASE_URL=${{ Postgres.DATABASE_URL }} (sin espacios)."
+        ) from exc
+
+    if not _config_bd.get("NAME"):
+        raise ImproperlyConfigured(
+            "DATABASE_URL no incluye el nombre de la base de datos."
+        )
+
+    DATABASES = {"default": _config_bd}
 else:
     # Modo desarrollo sin Postgres accesible.
     DATABASES = {
