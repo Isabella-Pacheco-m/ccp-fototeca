@@ -14,11 +14,16 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
+cp .env.example .env                    # y completa los valores
 python manage.py migrate
-python manage.py crear_superadmin --correo admin@ccpalmira.org.co --clave "TuClaveSegura"
+python manage.py crear_superadmin       # toma ADMIN_CORREO y ADMIN_CLAVE del .env
 python manage.py cargar_demo            # categorías + 12 fotografías de ejemplo
 python manage.py runserver
 ```
+
+> Las credenciales del superadministrador viven en el `.env`
+> (`ADMIN_CORREO` / `ADMIN_CLAVE`), que **no** se versiona. Cámbialas después
+> del primer ingreso.
 
 | Ruta | Qué es |
 |---|---|
@@ -175,7 +180,7 @@ Ver `.env.example` para la lista completa. Las más relevantes:
 
 | Variable | Por defecto | Para qué |
 |---|---|---|
-| `SECRET_KEY` | — | Firma de sesiones. **Obligatoria en producción.** |
+| `SECRET_KEY` | — | Firma de sesiones. **Obligatoria**: con `DEBUG=False` el proyecto no arranca sin ella. |
 | `DEBUG` | `True` | Ponlo en `False` al desplegar. |
 | `DATABASE_URL` | SQLite | Postgres de Railway. |
 | `MAGIC_LINK_BACKEND` | `supabase` si hay credenciales | `supabase` o `local`. |
