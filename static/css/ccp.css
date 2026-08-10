@@ -398,9 +398,22 @@ select.campo {
 }
 .buscador__enviar {
   position: absolute;
-  right: 6px; top: 50%;
-  transform: translateY(-50%);
+  /* Se ancla por arriba y por abajo en vez de centrarlo con translateY: así
+     el transform de .boton:hover no puede descolocarlo del campo. */
+  right: 6px;
+  top: 6px;
+  bottom: 6px;
+  padding-block: 0;
+  padding-inline: 1.4rem;
   border-radius: 999px;
+}
+.buscador__enviar:hover,
+.buscador__enviar:focus-visible,
+.buscador__enviar:active {
+  /* El realce va por color, no por desplazamiento: es un botón embutido. */
+  transform: none;
+  background: var(--verde);
+  box-shadow: none;
 }
 .buscador__limpiar {
   position: absolute;
