@@ -35,7 +35,6 @@
           {% for categoria in categorias %}
             <a class="pastilla {% if filtros.categoria == categoria.slug %}pastilla--activa{% endif %}"
                href="{% querystring categoria=categoria.slug pagina=None %}">
-              <span class="pastilla__punto" style="background: {{ categoria.color }};"></span>
               {{ categoria.nombre }}
               <span class="pastilla__conteo">{{ categoria.total }}</span>
             </a>

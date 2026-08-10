@@ -11,8 +11,10 @@ def main():
         from django.core.management import execute_from_command_line
     except ImportError as exc:  # pragma: no cover
         raise ImportError(
-            "No se pudo importar Django. ¿Está activado el entorno virtual "
-            "(.venv) y ejecutado `pip install -r requirements.txt`?"
+            "No se pudo importar Django. En local, activa el entorno virtual "
+            "(`source .venv/bin/activate`) y ejecuta "
+            "`pip install -r requirements.txt`. En la consola de Railway el "
+            "entorno está en /opt/venv: usa `/opt/venv/bin/python manage.py …`."
         ) from exc
     execute_from_command_line(sys.argv)
 

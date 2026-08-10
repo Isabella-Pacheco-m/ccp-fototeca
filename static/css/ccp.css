@@ -150,7 +150,7 @@ hr { border: 0; border-top: 1px solid var(--linea); margin: 2rem 0; }
   color: inherit;
   flex: 0 0 auto;
 }
-.marca img { height: 38px; width: auto; }
+.marca img { height: 48px; width: auto; }
 .marca__texto {
   display: none;
   padding-left: 0.9rem;
@@ -458,7 +458,6 @@ select.campo {
   font-variant-numeric: tabular-nums;
   opacity: 0.65;
 }
-.pastilla__punto { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
 
 .selector-linea {
   padding: 0.34rem 2rem 0.34rem 0.7rem;
@@ -759,7 +758,7 @@ select.campo {
   letter-spacing: -0.022em;
   line-height: 1.22;
   color: var(--crema);
-  max-width: 16ch;
+  max-width: 19ch;
   margin: 0;
 }
 .acceso__lema em { font-style: normal; font-weight: 300; color: var(--lima-claro); }
@@ -874,7 +873,7 @@ select.campo {
 .panel__pie { margin-top: auto; padding-top: 1.1rem; border-top: 1px solid rgba(250, 246, 228, 0.16); font-size: 0.82rem; }
 .panel__pie a { color: var(--lima-claro); }
 
-.panel__contenido { padding: clamp(1.25rem, 3vw, 2.4rem); max-width: 1180px; width: 100%; }
+.panel__contenido { padding: clamp(1.25rem, 3vw, 2.4rem); width: 100%; min-width: 0; }
 
 .panel-cabecera {
   display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem;
@@ -1036,7 +1035,7 @@ select.campo {
   color: var(--tinta-tenue);
 }
 .sitio-pie__fila { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
-.sitio-pie__fila img { height: 30px; opacity: 0.75; }
+.sitio-pie__fila img { height: 42px; width: auto; opacity: 0.85; }
 .sitio-pie__derecha { margin-left: auto; display: flex; gap: 1.2rem; flex-wrap: wrap; }
 
 .pagina { display: flex; flex-direction: column; min-height: 100vh; }

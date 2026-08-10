@@ -6,7 +6,10 @@
   <title>{% block titulo %}Fototeca{% endblock %} · Cámara de Comercio de Palmira</title>
   <meta name="description" content="{% block descripcion %}Archivo fotográfico institucional de la Cámara de Comercio de Palmira.{% endblock %}">
   <meta name="theme-color" content="#3f6b26">
-  <link rel="icon" href="{% static 'img/logo-ccp.png' %}" type="image/png">
+  {# Icono cuadrado recortado del isotipo: el logotipo completo es apaisado y
+     el navegador lo deformaba al encajarlo en la pestaña. #}
+  <link rel="icon" href="{% static 'img/favicon.png' %}" type="image/png" sizes="256x256">
+  <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
